@@ -7,7 +7,7 @@ namespace CityInfoService.API.Models
     {
         public City()
         {
-            this.PointsOfInterest = new HashSet<PointOfInterest>();
+            this.PointsOfInterest = new List<PointOfInterest>();
         }
 
         public int Id { get; set; }
@@ -20,6 +20,6 @@ namespace CityInfoService.API.Models
         [StringLength(200, MinimumLength = 5)]
         public string Description { get; set; }
 
-        public HashSet<PointOfInterest> PointsOfInterest { get; set; }
+        public IEnumerable<PointOfInterest> PointsOfInterest { get; set; }
     }
 }
