@@ -1,26 +1,26 @@
-﻿using CityInfoService.API.DataAccess;
+﻿using CityInfoService.API.Dtos;
 using CityInfoService.API.Models;
+using CityInfoService.API.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace CityInfoService.API.Controllers
-{                                                                   // 1.implement the CRUD
-    [ApiController]                                                 // 2.make a Reposictory to get the data from DB
-    [Route("api/citiesInfo")]                                       // 3.create DTOs 
-    public class CitiesInfoController : ControllerBase              // 4.create DIC
+{
+    [ApiController]                                                 // 1. make Services & register them in StartUp, DI, IoC
+    [Route("api/citiesInfo")]                                       // 2. make actions async & return Task<T>
+    public class CitiesInfoController : ControllerBase              // 3. check for null values in DB 
     {
-        private readonly CityInfoContext context; // => Service Layer
+        private readonly ICitiesInfoService citiesInfoService;
 
-        public CitiesInfoController(CityInfoContext context)
+        public CitiesInfoController(ICitiesInfoService citiesInfoService)
         {
-            this.context = context;
+            this.citiesInfoService = citiesInfoService;
         }
 
         [HttpGet]
         public ActionResult<IEnumerable<City>> GetCities()
         {
-            var cities = this.context.Cities.ToList();
+            var cities = this.citiesInfoService.GetCities();
 
             return this.Ok(cities);
         }
@@ -28,47 +28,53 @@ namespace CityInfoService.API.Controllers
         [HttpGet("{id}")]
         public ActionResult<City> GetCityById(int id)
         {
-            City city = this.context
-                .Cities.FirstOrDefault(c => c.Id == id);
+            var city = this.citiesInfoService.GetCityById(id);
 
-            return city;
+            if (city == null)
+            {
+                return this.NotFound();
+            }
+
+            return this.Ok(city);
         }
 
         [HttpPost]
-        public ActionResult<City> CreateCity(City inputCityModel)
+        public ActionResult<City> CreateCity([FromBody]CityForCreationDto cityDto)
         {
-            this.context.Cities.Add(inputCityModel);
-            this.context.SaveChanges();
+            this.citiesInfoService.CreateCity(cityDto);
 
-            return this.CreatedAtAction("GetCityById", new { id = inputCityModel.Id }, inputCityModel);
+            return this.Ok();
 
-            // test if it returns the new URI in Postman headers
-            //  {
-            //   "name": "TEST",
-            //   "description": "The one for the TEST purposes.",
-            //   "pointsOfInterest": []
-            //  }
+
+            //return this.CreatedAtAction("GetCityById", new { id = city.Id }, city);
+
+            //newly created obj returned in the headers => OK https://localhost:44348/api/citiesInfo/11
         }
 
-        [HttpPut("{id}")]
-        public ActionResult<City> UpdateCity(City inputCityModel)
-        {
-            City city = this.context.Cities.FirstOrDefault(c => c.Id == inputCityModel.Id);
-            city.Name = inputCityModel.Name;
-            city.Description = inputCityModel.Description;
-            this.context.SaveChanges();
+        //[HttpPut("{id}")]
+        //public ActionResult<City> UpdateCity(int id, [FromBody] CityForUpdateDto cityDto)
+        //{
+        //    City city = this.context.Cities.FirstOrDefault(c => c.Id == id);
+        //    city.Name = cityDto.Name;
+        //    city.Description = cityDto.Description;
+        //    this.context.SaveChanges();
 
-            return city;  // if it returns the updated city??
-        }
+        //    return city;  // if it returns the updated city  == Checked out!
+        //}
 
         [HttpDelete("{id}")]
-        public ActionResult<City> DeleteCity(int id)
+        public ActionResult<City> DeleteCity(int id)   // NB! MUST be with the same name
         {
-            var city = this.context.Cities.SingleOrDefault(c => c.Id == id);
-            this.context.Cities.Remove(city);
-            this.context.SaveChanges();
+            if (!this.citiesInfoService.CityExists(id))
+            {
+                return this.NotFound();
+            }
 
-            return this.Ok(city);
+            var city = this.citiesInfoService.GetCityById(id);
+
+            this.citiesInfoService.DeleteCity(city);
+
+            return this.NoContent();
         }
     }
 }

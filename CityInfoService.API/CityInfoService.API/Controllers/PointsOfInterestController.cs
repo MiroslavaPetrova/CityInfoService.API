@@ -18,25 +18,7 @@ namespace CityInfoService.API.Controllers
             this.context = context;
         }
 
-        //https://localhost:44348/api/pointsofinterest
-        [HttpGet]
-        public IEnumerable<string> Get()
-        {
-            return new string[] { "value1", "value2" };
-        }
-
-        //http://api.example.com/games/1/platforms/34:
-        //{
-        //  "id": 34,
-        //  "title": "Xbox",
-        //  "publisher": "Microsoft",
-        //  "releaseDate": "2015-01-01",
-        //  "forms": [
-        //    {"type": "edit", "fields: [] },
-        //  ]
-        //    }
-
-        // https://localhost:44348/api/citiesInfo/1/pointsofinterest/1
+        // https://localhost:44348/api/citiesInfo/1/pointsofinterest/1  
 
         [HttpGet("{id}", Name = "GetPointOfInterest")]
         public IEnumerable<CityDto> GetPointOfInterest(int cityId, int id)
@@ -53,12 +35,11 @@ namespace CityInfoService.API.Controllers
                     { 
                         Id = pi.Id,
                         Name = pi.Name,
-                        Description = pi.Description
-                    })
+                        Description = pi.Description,
+                    }),
                 }).ToList();
 
             return cities;
-
         }
     }
 }

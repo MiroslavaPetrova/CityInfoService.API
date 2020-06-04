@@ -1,5 +1,5 @@
-﻿using CityInfoService.API.Models;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace CityInfoService.API.Dtos
 {
@@ -16,5 +16,7 @@ namespace CityInfoService.API.Dtos
         public string Description { get; set; }
 
         public IEnumerable<PointOfInterestDto> PointsOfInterest { get; set; }
+
+        //public int NumberOfPointsOfInterest => PointsOfInterest.Count();
     }
 }
